@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-50: #eef2f9;
+  --color-primary-100: #d7e1f0;
+  --color-primary-500: #2c4a7c;
+  --color-primary-600: #223a63;
+  --color-primary-900: #142240;
+
+  --color-accent-500: #c08a2e;
+  --color-accent-600: #a4741f;
+
+  --color-paper-50: #faf8f4;
+  --color-paper-100: #f2ede3;
+  --color-paper-200: #e6ddcc;
+  
+  --color-ink-400: #8b8577;
+  --color-ink-600: #57534a;
+  --color-ink-900: #262420;
+
+  --color-success: #1e8e5a;
+  --color-warning: #b5750a;
+  --color-error: #c0362c;
+  --color-info: #2c6ba0;
+
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Sora', sans-serif;
+  --font-hindi: 'Noto Serif Devanagari', serif;
+  --font-english: 'Noto Serif', serif;
+
+  /* Shadcn UI Variables */
+  --color-background: #ffffff;
+  --color-foreground: var(--color-ink-900);
+  --color-popover: #ffffff;
+  --color-popover-foreground: var(--color-ink-900);
+  --color-border: var(--color-paper-200);
+  --color-input: var(--color-paper-200);
+  --color-muted: var(--color-paper-100);
+  --color-muted-foreground: var(--color-ink-400);
+  --color-accent: var(--color-paper-100);
+  --color-accent-foreground: var(--color-ink-900);
+  --color-ring: var(--color-primary-500);
+  --color-destructive: var(--color-error);
+  --color-destructive-foreground: #ffffff;
+}
+
+@layer base {
+  body {
+    @apply bg-paper-50 text-ink-900 font-body antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
