@@ -3,12 +3,33 @@ import { WizardContext } from '../../state/WizardContext';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../shared/Card';
 import { Input } from '../shared/Input';
 import { Button } from '../shared/Button';
-import { School, Upload, Image as ImageIcon, X } from 'lucide-react';
+import { School, Upload, Image as ImageIcon, X, Eye } from 'lucide-react';
+import { AdmitCardTemplate } from '../admit-card/AdmitCardTemplate';
 
 export function StepSchoolProfile() {
   const { state, dispatch } = useContext(WizardContext);
   const [localData, setLocalData] = useState(state.schoolProfile);
+  const [showPreview, setShowPreview] = useState(false);
   const fileInputRef = useRef(null);
+
+  const dummyExamDetails = {
+    examType: 'Half Yearly Examination',
+    session: '2026-27'
+  };
+  const dummyStudent = {
+    name: 'Student Name',
+    fatherName: "Father's Name",
+    motherName: "Mother's Name",
+    classLabel: 'X',
+    rollNo: '123'
+  };
+  const dummySubjects = [
+    { date: '10/03/2026', name: 'Mathematics' },
+    { date: '12/03/2026', name: 'Science' },
+    { date: '14/03/2026', name: 'English' },
+    { date: '16/03/2026', name: 'Hindi' },
+    { date: '18/03/2026', name: 'Social Science' }
+  ];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -56,8 +77,9 @@ export function StepSchoolProfile() {
   };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center space-x-3">
+    <>
+      <Card>
+        <CardHeader className="flex flex-row items-center space-x-3">
         <div className="p-2 bg-primary-100 text-primary-600 rounded-lg">
           <School className="w-5 h-5" />
         </div>
@@ -135,11 +157,51 @@ export function StepSchoolProfile() {
         </div>
       </CardContent>
 
-      <CardFooter className="justify-end">
+      <CardFooter className="justify-between">
+        <Button variant="outline" onClick={() => setShowPreview(true)} className="cursor-pointer">
+          <Eye className="w-4 h-4 mr-2" />
+          Preview Card
+        </Button>
         <Button variant="accent" onClick={handleNext} disabled={!isValid} className="cursor-pointer">
           Next Step
         </Button>
       </CardFooter>
     </Card>
+
+    {showPreview && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+        <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-3xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="flex items-center justify-between p-4 border-b border-paper-200 bg-paper-50">
+            <h3 className="text-lg font-bold text-ink-900">Template Preview</h3>
+            <button 
+              onClick={() => setShowPreview(false)}
+              className="p-1 rounded-md text-ink-500 hover:text-ink-900 hover:bg-paper-200 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          
+          <div className="p-6 overflow-y-auto max-h-[75vh] flex justify-center bg-paper-100 hide-scrollbar">
+            <div className="transform scale-[0.75] sm:scale-[0.85] md:scale-100 origin-top">
+              <div className="shadow-xl bg-white">
+                <AdmitCardTemplate 
+                  schoolProfile={localData}
+                  examDetails={dummyExamDetails}
+                  student={dummyStudent}
+                  subjects={dummySubjects}
+                />
+              </div>
+            </div>
+          </div>
+          
+          <div className="p-4 border-t border-paper-200 bg-white flex justify-end">
+            <Button variant="outline" onClick={() => setShowPreview(false)} className="cursor-pointer">
+              Close Preview
+            </Button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }

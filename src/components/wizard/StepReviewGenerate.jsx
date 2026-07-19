@@ -18,6 +18,10 @@ export function StepReviewGenerate() {
   const validStudents = studentData.rows.filter(r => r.status === 'valid');
   const isAdvanced = subjectSetup.mode === 'advanced';
 
+  const classNames = classSelection.classes 
+    ? classSelection.classes.map(c => c.classLabel).join(', ')
+    : classSelection.classLabel;
+
   const getSubjectsForStudent = (student) => {
     if (isAdvanced) {
       const combo = subjectSetup.combinations.find(c => c.name.toLowerCase() === student.combinationName?.toLowerCase());
@@ -39,7 +43,7 @@ export function StepReviewGenerate() {
         setProgress({ current, total });
       });
 
-      pdf.save(`AdmitCards_Class_${classSelection.classLabel}.pdf`);
+      pdf.save(`AdmitCards_Class_${classNames.replace(/, /g, '_')}.pdf`);
       setIsDone(true);
     } catch (error) {
       console.error("PDF Generation Error:", error);
@@ -120,7 +124,7 @@ export function StepReviewGenerate() {
                     </div>
                     <div className="flex justify-between items-center pt-4">
                       <span className="text-ink-500">Target Class</span>
-                      <span className="font-semibold text-ink-900 text-right">Class {classSelection.classLabel} {classSelection.sectionsEnabled ? `(Sec ${classSelection.section})` : ''}</span>
+                      <span className="font-semibold text-ink-900 text-right">Class {classNames} {classSelection.sectionsEnabled && (!classSelection.classes || classSelection.classes.length === 1) ? `(Sec ${classSelection.section})` : ''}</span>
                     </div>
                     <div className="flex justify-between items-center pt-4">
                       <span className="text-ink-500">Total Students</span>

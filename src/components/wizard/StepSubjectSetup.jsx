@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'motion/react';
 const COMMON_SUBJECTS = [
   'Hindi', 'English', 'Mathematics', 'Science', 'Social Science', 'Sanskrit', 
   'General Knowledge', 'Computer Science', 'Hindi Grammar', 'English Grammar', 
-  'Hindi + Hindi Grammar', 'English + English Grammar'
+  'Hindi + Hindi Grammar', 'English + English Grammar', 'Drawing'
 ];
 
 export function StepSubjectSetup() {
@@ -60,6 +60,27 @@ export function StepSubjectSetup() {
       }));
       setNewSubjectName('');
     }
+  };
+
+  const handleLoadPattern = () => {
+    const pattern = ['Hindi + Hindi Grammar', 'English + English Grammar', 'Computer Science', 'Mathematics', 'Science', 'Social Science', 'General Knowledge', 'Drawing'];
+    
+    setLocalData(prev => {
+      const newSubjects = [...prev.subjects];
+      pattern.forEach((subjectName, index) => {
+        if (!newSubjects.find(s => s.name.toLowerCase() === subjectName.toLowerCase())) {
+          newSubjects.push({ 
+            id: Date.now().toString() + index, 
+            name: subjectName, 
+            date: null, 
+            dayLabel: null, 
+            timeStart: null, 
+            timeEnd: null 
+          });
+        }
+      });
+      return { ...prev, subjects: newSubjects };
+    });
   };
 
   const removeSimpleSubject = (id) => {
@@ -242,15 +263,18 @@ export function StepSubjectSetup() {
           <div>
             {renderSubjectChips()}
             <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-2 mt-4">Or Add Custom Subject</p>
-            <div className="flex space-x-2">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
               <Input 
                 placeholder="e.g. Environmental Studies" 
                 value={newSubjectName}
                 onChange={e => setNewSubjectName(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleAddSubject(newSubjectName)}
               />
-              <Button type="button" onClick={() => handleAddSubject(newSubjectName)} variant="secondary" className="cursor-pointer">
+              <Button type="button" onClick={() => handleAddSubject(newSubjectName)} variant="secondary" className="cursor-pointer whitespace-nowrap">
                 <Plus className="w-4 h-4 mr-1" /> Add
+              </Button>
+              <Button type="button" onClick={handleLoadPattern} variant="outline" className="cursor-pointer whitespace-nowrap">
+                Load Preset Pattern
               </Button>
             </div>
             {renderSubjectList(localData.subjects, removeSimpleSubject, moveSimpleSubject)}

@@ -25,7 +25,7 @@ export const AdmitCardTemplate = React.forwardRef(
           lineHeight: 1.2,
         }}
       >
-        <div className="flex flex-row items-center justify-between border-b-[3px] border-black pb-2 mb-2">
+        <div className="flex flex-row items-center justify-between border-b-[3px] border-black pb-2 mb-1">
           <div className="w-[18%] shrink-0 flex items-center justify-center">
             {schoolProfile.logoDataUrl ? (
               <img
@@ -55,21 +55,23 @@ export const AdmitCardTemplate = React.forwardRef(
             {(schoolProfile.mobile || schoolProfile.alternateMobile) && (
               <p className="text-[12px] font-bold mt-0.5">
                 Mob.: {schoolProfile.mobile}
-                {schoolProfile.mobile && schoolProfile.alternateMobile ? ", " : ""}
+                {schoolProfile.mobile && schoolProfile.alternateMobile
+                  ? ", "
+                  : ""}
                 {schoolProfile.alternateMobile}
               </p>
             )}
           </div>
         </div>
 
-        <div className="text-center mb-2">
-          <h2 className="text-[13px] font-bold uppercase tracking-wide inline-block px-4 pb-0.5 whitespace-nowrap">
+        <div className="text-center mb-1">
+          <h2 className="text-[11px] font-bold uppercase tracking-wide inline-block px-4 pb-0.5 max-w-full">
             {examDetails.examType === "custom"
               ? examDetails.customLabel
               : `${examDetails.examType} Examination`.replace("-", " ")}{" "}
             – {examDetails.session.split("-")[0]}
           </h2>
-          <h3 className="text-[14px] font-bold uppercase tracking-widest leading-tight mt-0.5">
+          <h3 className="text-[11px] font-bold uppercase tracking-widest leading-tight mt-0.5">
             Admit Card
           </h3>
           <p className="text-[10px] font-bold mt-0.5">
@@ -77,28 +79,42 @@ export const AdmitCardTemplate = React.forwardRef(
           </p>
         </div>
 
-        <div className="space-y-1.5 mb-2 text-[11px] font-bold border-t-2 border-black pt-1.5">
-          <div className="flex">
-            <span className="w-12">Name</span>
+        <div className="space-y-2 mb-2 text-[11px] font-bold border-t-2 border-black pt-1.5">
+          <div className="flex items-end">
+            <span className="whitespace-nowrap w-22">Name</span>
             <span className="mx-1">:</span>
-            <span className="flex-1 border-b border-black font-medium">
-              {student.name}
+            <span className="flex-1 border-b border-black font-medium px-1">
+              {student.name || '\u00A0'}
             </span>
           </div>
-          <div className="flex">
-            <div className="flex-1 flex">
-              <span className="w-12">Class</span>
+          <div className="flex items-end">
+            <span className="whitespace-nowrap w-22">Father's Name</span>
+            <span className="mx-1">:</span>
+            <span className="flex-1 border-b border-black font-medium px-1">
+              {student.fatherName || '\u00A0'}
+            </span>
+          </div>
+          <div className="flex items-end">
+            <span className="whitespace-nowrap w-22">Mother's Name</span>
+            <span className="mx-1">:</span>
+            <span className="flex-1 border-b border-black font-medium px-1">
+              {student.motherName || '\u00A0'}
+            </span>
+          </div>
+          <div className="flex items-end">
+            <div className="flex-1 flex items-end">
+              <span className="whitespace-nowrap w-22">Class</span>
               <span className="mx-1">:</span>
-              <span className="flex-1 border-b border-black text-center font-medium">
-                {student.classLabel}
+              <span className="flex-1 border-b border-black text-center font-medium px-1">
+                {student.classLabel || '\u00A0'}
               </span>
             </div>
-            <div className="w-3"></div>
-            <div className="flex-1 flex">
-              <span className="w-14">Roll No.</span>
+            <div className="w-2"></div>
+            <div className="flex-1 flex items-end">
+              <span className="whitespace-nowrap">Roll No.</span>
               <span className="mx-1">:</span>
-              <span className="flex-1 border-b border-black text-center font-medium">
-                {student.rollNo}
+              <span className="flex-1 border-b border-black text-center font-medium px-1">
+                {student.rollNo || '\u00A0'}
               </span>
             </div>
           </div>
@@ -135,7 +151,7 @@ export const AdmitCardTemplate = React.forwardRef(
           </div>
           <div className="w-32 text-center">
             <div className="border-b border-black w-full mb-1"></div>
-            Head Signature
+            Head of Gurukul
           </div>
         </div>
       </div>

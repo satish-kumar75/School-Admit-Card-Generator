@@ -53,3 +53,16 @@
     @apply font-display;
   }
 }
+
+@layer utilities {
+  .hide-scrollbar {
+    /* IE and Edge */
+    -ms-overflow-style: none;
+    /* Firefox */
+    scrollbar-width: none;
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}

@@ -15,15 +15,14 @@ export const initialState = {
     defaultTimeEnd: '01:00 PM',
   },
   classSelection: {
-    classKey: '',
-    classLabel: '',
+    classes: [], 
     sectionsEnabled: false,
     section: '',
   },
   subjectSetup: {
     mode: 'simple',
-    subjects: [], // { id, name, date, dayLabel, timeStart, timeEnd }
-    combinations: [], // { id, name, subjects: [] }
+    subjects: [], 
+    combinations: [], 
   },
   studentData: {
     rows: [],

@@ -3,7 +3,9 @@ export const normalizeClass = (val) => {
   const s = String(val).toLowerCase().trim().replace(/class\s*/, '');
   
   const map = {
-    'nursery': 'nursery', 'nur': 'nursery',
+    'nursery': 'nursery', 'nur': 'nursery', 'n.c': 'nursery', 'nc': 'nursery',
+    'pg-1': 'pg-1', 'pg1': 'pg-1',
+    'pg-2': 'pg-2', 'pg2': 'pg-2',
     'lkg': 'lkg',
     'ukg': 'ukg',
     'i': '1', '1': '1', 'one': '1',

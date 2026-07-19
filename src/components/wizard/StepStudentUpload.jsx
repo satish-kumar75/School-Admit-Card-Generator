@@ -19,6 +19,10 @@ export function StepStudentUpload() {
   const rowsPerPage = 10;
 
   const isAdvanced = state.subjectSetup.mode === 'advanced';
+  
+  const classNames = state.classSelection.classes 
+    ? state.classSelection.classes.map(c => c.classLabel).join(', ')
+    : state.classSelection.classLabel;
 
   const downloadTemplateCsv = () => {
     const { csv } = generateSampleTemplate(isAdvanced);
@@ -62,7 +66,10 @@ export function StepStudentUpload() {
       }
 
       const firstRowKeys = Object.keys(rawRows[0]).join(',').toLowerCase();
-      if (!firstRowKeys.includes('name') || !firstRowKeys.includes('roll')) {
+      const hasName = firstRowKeys.includes('name');
+      const hasRoll = firstRowKeys.includes('roll') || firstRowKeys.includes('s.no') || firstRowKeys.includes('sno');
+      
+      if (!hasName || !hasRoll) {
         setErrorMsg('This doesn\'t look like the expected format. Please use the sample template.');
         setIsProcessing(false);
         return;
@@ -71,7 +78,7 @@ export function StepStudentUpload() {
       const validationResult = validateStudentData(rawRows, state.classSelection, state.subjectSetup);
       
       if (validationResult.validCount === 0 && validationResult.rejectedCount === 0 && validationResult.skippedCount > 0) {
-        setErrorMsg(`No rows matched Class ${state.classSelection.classLabel} in this file. Did you select the right class, or upload the right file?`);
+        setErrorMsg(`No rows matched the selected classes (${classNames}) in this file. Did you select the right classes, or upload the right file?`);
         setLocalData({ rows: [], validCount: 0, warningCount: 0, rejectedCount: 0, skippedCount: 0 });
         setIsProcessing(false);
         return;
@@ -86,6 +93,52 @@ export function StepStudentUpload() {
     
     setIsProcessing(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleGenerateBlank = () => {
+    const blankStudent = {
+      name: "",
+      fatherName: "",
+      motherName: "",
+      rollNo: "",
+      classLabel: "",
+      section: "",
+      status: 'valid',
+      reason: 'Blank Template'
+    };
+    
+    let blankRows = [];
+    
+    if (state.classSelection.classes && state.classSelection.classes.length > 0) {
+      // User selected classes
+      const selectedClasses = state.classSelection.classes;
+      
+      // Pad the array so its length is a multiple of 4 (for A4 size)
+      const targetLength = Math.ceil(selectedClasses.length / 4) * 4;
+      
+      for (let i = 0; i < targetLength; i++) {
+        // Cycle through the selected classes to fill the spots
+        const classObj = selectedClasses[i % selectedClasses.length];
+        blankRows.push({
+          ...blankStudent,
+          classLabel: classObj.classLabel
+        });
+      }
+    } else {
+      // No class selected. Generate 4 completely blank templates.
+      blankRows = Array(4).fill(blankStudent);
+    }
+    
+    const payload = { 
+      rows: blankRows, 
+      validCount: blankRows.length, 
+      warningCount: 0, 
+      rejectedCount: 0, 
+      skippedCount: 0 
+    };
+    
+    dispatch({ type: 'SET_STUDENT_DATA', payload });
+    dispatch({ type: 'SET_STEP', payload: 7 });
   };
 
   const isValid = localData.validCount > 0;
@@ -121,7 +174,7 @@ export function StepStudentUpload() {
         </div>
         <div>
           <CardTitle>Student Data Upload</CardTitle>
-          <p className="text-sm text-ink-600">Upload the student list for Class {state.classSelection.classLabel}.</p>
+          <p className="text-sm text-ink-600">Upload the student list for: {classNames}.</p>
         </div>
       </CardHeader>
       
@@ -146,6 +199,12 @@ export function StepStudentUpload() {
                 <input type="file" accept=".csv, .xlsx, .xls" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
                 <Button onClick={() => fileInputRef.current?.click()} isLoading={isProcessing} className="cursor-pointer w-full sm:w-auto justify-center">
                   <Upload className="w-4 h-4 mr-2" /> Select File
+                </Button>
+              </div>
+              
+              <div className="flex items-center w-full sm:w-auto mt-4 pt-4 border-t border-paper-200">
+                <Button variant="outline" onClick={handleGenerateBlank} className="cursor-pointer w-full sm:w-auto justify-center border-dashed border-ink-300 text-ink-700 hover:bg-paper-100">
+                  <FileText className="w-4 h-4 mr-2" /> Skip & Generate Blank Formats
                 </Button>
               </div>
               

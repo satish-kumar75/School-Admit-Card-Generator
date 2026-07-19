@@ -3,12 +3,20 @@ import { WizardContext } from '../../state/WizardContext';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../shared/Card';
 import { Input } from '../shared/Input';
 import { Button } from '../shared/Button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users } from 'lucide-react';
+import { Users, Check } from 'lucide-react';
 
 export function StepClassSelection() {
   const { state, dispatch } = useContext(WizardContext);
-  const [localData, setLocalData] = useState(state.classSelection);
+  
+  const initialClasses = state.classSelection.classes || 
+    (state.classSelection.classKey 
+      ? [{ classKey: state.classSelection.classKey, classLabel: state.classSelection.classLabel }] 
+      : []);
+
+  const [localData, setLocalData] = useState({
+    ...state.classSelection,
+    classes: initialClasses
+  });
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -19,6 +27,8 @@ export function StepClassSelection() {
   };
 
   const classOptions = [
+    { label: "PG-1", value: "pg-1" },
+    { label: "PG-2", value: "pg-2" },
     { label: "Nursery", value: "nursery" },
     { label: "LKG", value: "lkg" },
     { label: "UKG", value: "ukg" },
@@ -36,12 +46,29 @@ export function StepClassSelection() {
     { label: "Class XII", value: "12" }
   ];
 
-  const handleClassChange = (classKey) => {
-    const classLabel = classOptions.find(opt => opt.value === classKey)?.label.replace('Class ', '') || '';
-    setLocalData(prev => ({ ...prev, classKey, classLabel }));
+  const handleToggleClass = (opt) => {
+    setLocalData(prev => {
+      const isSelected = prev.classes.some(c => c.classKey === opt.value);
+      let newClasses;
+      if (isSelected) {
+        newClasses = prev.classes.filter(c => c.classKey !== opt.value);
+      } else {
+        newClasses = [...prev.classes, { classKey: opt.value, classLabel: opt.label.replace('Class ', '') }];
+      }
+      
+      const isMultiple = newClasses.length > 1;
+      
+      return {
+        ...prev,
+        classes: newClasses,
+        sectionsEnabled: isMultiple ? false : prev.sectionsEnabled,
+        section: isMultiple ? '' : prev.section,
+      };
+    });
   };
 
-  const isValid = localData.classKey !== '' && (!localData.sectionsEnabled || localData.section.trim() !== '');
+  const isMultiple = localData.classes.length > 1;
+  const isValid = !localData.sectionsEnabled || localData.section.trim() !== '';
 
   const handleNext = () => {
     if (isValid) {
@@ -67,35 +94,50 @@ export function StepClassSelection() {
       </CardHeader>
       
       <CardContent className="space-y-6">
-        <div className="flex flex-col space-y-1">
-          <label className="text-sm font-medium text-ink-900">Class *</label>
-          <Select value={localData.classKey} onValueChange={handleClassChange}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select a class..." />
-            </SelectTrigger>
-            <SelectContent>
-              {classOptions.map(opt => (
-                <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex flex-col space-y-3">
+          <label className="text-sm font-medium text-ink-900">Select Classes *</label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+            {classOptions.map(opt => {
+              const isSelected = localData.classes.some(c => c.classKey === opt.value);
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => handleToggleClass(opt)}
+                  className={`flex items-center justify-between px-3 py-2 border rounded-md transition-colors cursor-pointer ${
+                    isSelected 
+                      ? 'bg-primary-50 border-primary-500 text-primary-900 shadow-sm' 
+                      : 'bg-white border-paper-200 text-ink-700 hover:bg-paper-50'
+                  }`}
+                >
+                  <span className="text-sm font-medium">{opt.label}</span>
+                  {isSelected && <Check className="w-4 h-4 text-primary-600" />}
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-xs text-ink-500 mt-1 italic">
+            Tip: You can skip selecting any class if you only want to generate completely blank templates.
+          </p>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <input 
-            type="checkbox" 
-            id="sectionsEnabled" 
-            name="sectionsEnabled"
-            checked={localData.sectionsEnabled}
-            onChange={handleChange}
-            className="w-4 h-4 text-primary-600 rounded border-paper-200 focus:ring-primary-500 cursor-pointer"
-          />
-          <label htmlFor="sectionsEnabled" className="text-sm text-ink-900 cursor-pointer">
-            This class is divided into sections (e.g. A, B, C)
-          </label>
-        </div>
+        {!isMultiple && (
+          <div className="flex items-center space-x-2">
+            <input 
+              type="checkbox" 
+              id="sectionsEnabled" 
+              name="sectionsEnabled"
+              checked={localData.sectionsEnabled}
+              onChange={handleChange}
+              className="w-4 h-4 text-primary-600 rounded border-paper-200 focus:ring-primary-500 cursor-pointer"
+            />
+            <label htmlFor="sectionsEnabled" className="text-sm text-ink-900 cursor-pointer">
+              This class is divided into sections (e.g. A, B, C)
+            </label>
+          </div>
+        )}
 
-        {localData.sectionsEnabled && (
+        {localData.sectionsEnabled && !isMultiple && (
           <Input 
             label="Section *" 
             name="section" 
