@@ -104,12 +104,12 @@ export function StepExamSchedule() {
   const handleNext = () => {
     if (isValid) {
       dispatch({ type: "SET_SUBJECT_SETUP", payload: localData });
-      dispatch({ type: "SET_STEP", payload: 6 });
+      dispatch({ type: "SET_STEP", payload: 7 });
     }
   };
 
   const handleBack = () => {
-    dispatch({ type: "SET_STEP", payload: 4 });
+    dispatch({ type: "SET_STEP", payload: 5 });
   };
 
   const hasSunday = !isAdvanced

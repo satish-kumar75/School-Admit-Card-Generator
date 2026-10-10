@@ -1,5 +1,6 @@
 export const initialState = {
   currentStep: 1,
+  mode: null,
   schoolProfile: {
     logoDataUrl: null,
     name: '',
@@ -13,6 +14,9 @@ export const initialState = {
     session: '',
     defaultTimeStart: '09:00 AM',
     defaultTimeEnd: '01:00 PM',
+  },
+  attendance: {
+    date: null,
   },
   classSelection: {
     classes: [], 
@@ -37,6 +41,10 @@ export function wizardReducer(state, action) {
   switch (action.type) {
     case 'SET_STEP':
       return { ...state, currentStep: action.payload };
+    case 'SET_MODE':
+      return { ...state, mode: action.payload };
+    case 'SET_ATTENDANCE':
+      return { ...state, attendance: { ...state.attendance, ...action.payload } };
     case 'SET_SCHOOL_PROFILE':
       return { ...state, schoolProfile: { ...state.schoolProfile, ...action.payload } };
     case 'SET_EXAM_DETAILS':
@@ -52,8 +60,9 @@ export function wizardReducer(state, action) {
     case 'RESET_WIZARD':
       return {
         ...initialState,
-        schoolProfile: state.schoolProfile, // preserve school profile
-        examDetails: state.examDetails, // optionally preserve exam details
+        schoolProfile: state.schoolProfile,
+        examDetails: state.examDetails,
+        mode: state.mode,
       };
     case 'LOAD_DRAFT':
       return { ...state, ...action.payload };

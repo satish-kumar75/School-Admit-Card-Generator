@@ -280,7 +280,7 @@ export function StepReviewGenerate() {
           <CardFooter>
             <Button
               variant="outline"
-              onClick={() => dispatch({ type: "SET_STEP", payload: 6 })}
+              onClick={() => dispatch({ type: "SET_STEP", payload: 7 })}
               className="cursor-pointer"
             >
               Back

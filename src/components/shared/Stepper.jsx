@@ -3,17 +3,28 @@ import { Check } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "../../lib/utils";
 
-const steps = [
+const admitSteps = [
   { id: 1, name: "School Profile" },
-  { id: 2, name: "Exam Details" },
-  { id: 3, name: "Class Selection" },
-  { id: 4, name: "Subject Setup" },
-  { id: 5, name: "Exam Schedule" },
-  { id: 6, name: "Student Data" },
-  { id: 7, name: "Review & Generate" },
+  { id: 2, name: "Choose Format" },
+  { id: 3, name: "Exam Details" },
+  { id: 4, name: "Class Selection" },
+  { id: 5, name: "Subject Setup" },
+  { id: 6, name: "Exam Schedule" },
+  { id: 7, name: "Student Data" },
+  { id: 8, name: "Review & Generate" },
 ];
 
-export function Stepper({ currentStep }) {
+const attendanceSteps = [
+  { id: 1, name: "School Profile" },
+  { id: 2, name: "Choose Format" },
+  { id: 3, name: "Class Selection" },
+  { id: 4, name: "Student Data" },
+  { id: 5, name: "Attendance Date" },
+  { id: 6, name: "Review & Generate" },
+];
+
+export function Stepper({ currentStep, mode }) {
+  const steps = mode === "attendance" ? attendanceSteps : admitSteps;
   return (
     <div className="sticky top-16 z-30 w-full bg-white border border-slate-200 rounded-2xl px-3 py-3 sm:px-5 shadow-sm">
       <ol className="flex items-center w-full" aria-label="Progress">

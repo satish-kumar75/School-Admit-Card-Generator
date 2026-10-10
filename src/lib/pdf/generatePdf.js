@@ -9,6 +9,11 @@ export const MARGIN_X = (A4_W - CARD_W) / 2;
 export const MARGIN_Y = (A4_H - CARD_H * 2) / 3;
 export const CARDS_PER_PAGE = 2;
 
+export const SHEET_W = 190;
+export const SHEET_H = 277;
+export const SHEET_X = 10;
+export const SHEET_Y = 10;
+
 let fontEmbedCSSPromise = null;
 
 export function getFontEmbedCSS() {
@@ -132,4 +137,8 @@ export async function captureElement(element, options) {
 export function placeCardImage(pdf, dataUrl, slot) {
   const y = MARGIN_Y + (slot * (CARD_H + MARGIN_Y));
   pdf.addImage(dataUrl, 'JPEG', MARGIN_X, y, CARD_W, CARD_H, undefined, 'FAST');
+}
+
+export function placeSheetImage(pdf, dataUrl) {
+  pdf.addImage(dataUrl, 'JPEG', SHEET_X, SHEET_Y, SHEET_W, SHEET_H, undefined, 'FAST');
 }

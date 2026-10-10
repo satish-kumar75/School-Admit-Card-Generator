@@ -221,12 +221,12 @@ export function StepSubjectSetup() {
   const handleNext = () => {
     if (isValid) {
       dispatch({ type: "SET_SUBJECT_SETUP", payload: localData });
-      dispatch({ type: "SET_STEP", payload: 5 });
+      dispatch({ type: "SET_STEP", payload: 6 });
     }
   };
 
   const handleBack = () => {
-    dispatch({ type: "SET_STEP", payload: 3 });
+    dispatch({ type: "SET_STEP", payload: 4 });
   };
 
   const renderSubjectList = (subjects, onRemove, onMove) => (

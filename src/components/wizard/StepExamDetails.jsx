@@ -42,12 +42,12 @@ export function StepExamDetails() {
   const handleNext = () => {
     if (isValid) {
       dispatch({ type: "SET_EXAM_DETAILS", payload: localData });
-      dispatch({ type: "SET_STEP", payload: 3 });
+      dispatch({ type: "SET_STEP", payload: 4 });
     }
   };
 
   const handleBack = () => {
-    dispatch({ type: "SET_STEP", payload: 1 });
+    dispatch({ type: "SET_STEP", payload: 2 });
   };
 
   return (

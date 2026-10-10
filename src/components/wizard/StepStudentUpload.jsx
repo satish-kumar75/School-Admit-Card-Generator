@@ -177,7 +177,7 @@ export function StepStudentUpload() {
     };
 
     dispatch({ type: "SET_STUDENT_DATA", payload });
-    dispatch({ type: "SET_STEP", payload: 7 });
+    dispatch({ type: "SET_STEP", payload: state.mode === "attendance" ? 6 : 8 });
   };
 
   const isValid = localData.validCount > 0;
@@ -185,12 +185,12 @@ export function StepStudentUpload() {
   const handleNext = () => {
     if (isValid) {
       dispatch({ type: "SET_STUDENT_DATA", payload: localData });
-      dispatch({ type: "SET_STEP", payload: 7 });
+      dispatch({ type: "SET_STEP", payload: state.mode === "attendance" ? 5 : 8 });
     }
   };
 
   const handleBack = () => {
-    dispatch({ type: "SET_STEP", payload: 5 });
+    dispatch({ type: "SET_STEP", payload: state.mode === "attendance" ? 3 : 6 });
   };
 
   const getStatusIcon = (status) => {

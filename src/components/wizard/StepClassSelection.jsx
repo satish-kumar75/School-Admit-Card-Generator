@@ -84,16 +84,17 @@ export function StepClassSelection() {
 
   const isMultiple = localData.classes.length > 1;
   const isValid = !localData.sectionsEnabled || localData.section.trim() !== "";
+  const isAttendance = state.mode === "attendance";
 
   const handleNext = () => {
     if (isValid) {
       dispatch({ type: "SET_CLASS_SELECTION", payload: localData });
-      dispatch({ type: "SET_STEP", payload: 4 });
+      dispatch({ type: "SET_STEP", payload: isAttendance ? 4 : 5 });
     }
   };
 
   const handleBack = () => {
-    dispatch({ type: "SET_STEP", payload: 2 });
+    dispatch({ type: "SET_STEP", payload: isAttendance ? 2 : 3 });
   };
 
   return (
