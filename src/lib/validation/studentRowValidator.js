@@ -2,10 +2,13 @@ import { normalizeClass } from './classAliases';
 
 // Helper to find the right key from raw headers
 export function findCanonicalKey(row, aliases) {
-  for (const [key, value] of Object.entries(row)) {
-    const normKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
-    if (aliases.includes(normKey)) {
-      return value;
+  const entries = Object.entries(row);
+  for (const alias of aliases) {
+    for (const [key, value] of entries) {
+      const normKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (normKey === alias) {
+        return value;
+      }
     }
   }
   return undefined;

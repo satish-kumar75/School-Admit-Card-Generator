@@ -1,4 +1,5 @@
 import React, { useContext, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { WizardContext } from "../../state/WizardContext";
 import {
   Card,
@@ -52,16 +53,43 @@ export function StepSchoolProfile() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!["image/jpeg", "image/png", "image/svg+xml"].includes(file.type)) {
-      alert("Please upload a PNG, JPG, or SVG image.");
+    if (!["image/jpeg", "image/png", "image/webp", "image/svg+xml"].includes(file.type)) {
+      alert("Please upload a PNG, JPG, WEBP, or SVG image.");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setLocalData((prev) => ({ ...prev, logoDataUrl: event.target.result }));
+    if (file.type === "image/svg+xml") {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setLocalData((prev) => ({ ...prev, logoDataUrl: event.target.result }));
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const maxSide = 256;
+      const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.max(1, Math.round(img.naturalWidth * scale));
+      const h = Math.max(1, Math.round(img.naturalHeight * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(objectUrl);
+      setLocalData((prev) => ({ ...prev, logoDataUrl: canvas.toDataURL("image/webp", 0.85) }));
     };
-    reader.readAsDataURL(file);
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setLocalData((prev) => ({ ...prev, logoDataUrl: event.target.result }));
+      };
+      reader.readAsDataURL(file);
+    };
+    img.src = objectUrl;
   };
 
   const clearImage = () => {
@@ -86,17 +114,28 @@ export function StepSchoolProfile() {
   return (
     <>
       <Card>
-        <CardHeader className="flex flex-row items-center space-x-3">
-          <div className="p-2 bg-primary-100 text-primary-600 rounded-lg">
-            <School className="w-5 h-5" />
+        <CardHeader className="flex flex-row items-center justify-between gap-3">
+          <div className="flex flex-row items-center space-x-3 min-w-0">
+            <div className="p-2 bg-primary-100 text-primary-600 rounded-lg shrink-0">
+              <School className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+              <CardTitle>School Profile</CardTitle>
+              <p className="text-sm text-ink-600">
+                Enter the school's details as they should appear on the admit
+                card.
+              </p>
+            </div>
           </div>
-          <div>
-            <CardTitle>School Profile</CardTitle>
-            <p className="text-sm text-ink-600">
-              Enter the school's details as they should appear on the admit
-              card.
-            </p>
-          </div>
+          <Button
+            variant="outline"
+            onClick={() => setShowPreview(true)}
+            className="cursor-pointer shrink-0"
+          >
+            <Eye className="w-4 h-4 mr-2" />
+            <span className="hidden sm:inline">Preview Card</span>
+            <span className="sm:hidden">Preview</span>
+          </Button>
         </CardHeader>
 
         <CardContent className="space-y-6">
@@ -131,7 +170,7 @@ export function StepSchoolProfile() {
               <div className="flex-1">
                 <input
                   type="file"
-                  accept="image/png, image/jpeg, image/svg+xml"
+                  accept="image/png, image/jpeg, image/webp, image/svg+xml"
                   className="hidden"
                   ref={fileInputRef}
                   onChange={handleImageUpload}
@@ -145,7 +184,7 @@ export function StepSchoolProfile() {
                   <Upload className="w-4 h-4 mr-2" /> Upload Logo
                 </Button>
                 <p className="text-xs text-ink-600 mt-2">
-                  Max size: 2MB. Format: PNG, JPG, or SVG. This logo will appear
+                  Max size: 2MB. Format: PNG, JPG, WEBP, or SVG. This logo will appear
                   in the top-left corner.
                 </p>
               </div>
@@ -194,15 +233,7 @@ export function StepSchoolProfile() {
           </div>
         </CardContent>
 
-        <CardFooter className="justify-between">
-          <Button
-            variant="outline"
-            onClick={() => setShowPreview(true)}
-            className="cursor-pointer"
-          >
-            <Eye className="w-4 h-4 mr-2" />
-            Preview Card
-          </Button>
+        <CardFooter className="justify-end">
           <Button
             variant="accent"
             onClick={handleNext}
@@ -214,8 +245,9 @@ export function StepSchoolProfile() {
         </CardFooter>
       </Card>
 
-      {showPreview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+      {showPreview &&
+        createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
           <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-3xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-4 border-b border-paper-200 bg-paper-50">
               <h3 className="text-lg font-bold text-ink-900">
@@ -252,7 +284,8 @@ export function StepSchoolProfile() {
               </Button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );

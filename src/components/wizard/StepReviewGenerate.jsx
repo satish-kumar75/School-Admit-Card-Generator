@@ -1,4 +1,5 @@
-import React, { useContext, useState, useRef, useEffect } from "react";
+import React, { useContext, useState, useRef } from "react";
+import { flushSync, createPortal } from "react-dom";
 import { WizardContext } from "../../state/WizardContext";
 import {
   Card,
@@ -8,9 +9,18 @@ import {
   CardFooter,
 } from "../shared/Card";
 import { Button } from "../shared/Button";
-import { CheckCircle2, FileDown, RotateCcw } from "lucide-react";
+import { CheckCircle2, FileDown, RotateCcw, X, AlertTriangle } from "lucide-react";
 import { AdmitCardTemplate } from "../admit-card/AdmitCardTemplate";
-import { captureCardsToPdf } from "../../lib/pdf/generatePdf";
+import {
+  prepareCapture,
+  createPdf,
+  startPdfPage,
+  captureElement,
+  placeCardImage,
+  waitForPaint,
+  decodeImages,
+  CARDS_PER_PAGE,
+} from "../../lib/pdf/generatePdf";
 
 export function StepReviewGenerate() {
   const { state, dispatch } = useContext(WizardContext);
@@ -19,6 +29,9 @@ export function StepReviewGenerate() {
   const [isDone, setIsDone] = useState(false);
 
   const hiddenContainerRef = useRef(null);
+  const cancelRequestedRef = useRef(false);
+  const [renderPage, setRenderPage] = useState(0);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   const {
     schoolProfile,
@@ -45,17 +58,60 @@ export function StepReviewGenerate() {
   };
 
   const handleGenerate = async () => {
+    if (!validStudents.length) return;
     setIsGenerating(true);
+    setShowCancelConfirm(false);
+    cancelRequestedRef.current = false;
     setProgress({ current: 0, total: validStudents.length });
 
     try {
-      await new Promise((r) => setTimeout(r, 300));
+      const options = await prepareCapture();
+      const pdf = createPdf();
+      const totalPages = Math.ceil(validStudents.length / CARDS_PER_PAGE);
+      let done = 0;
+      let cancelled = false;
 
-      const elements = Array.from(hiddenContainerRef.current.children);
+      for (let page = 0; page < totalPages; page++) {
+        if (cancelRequestedRef.current) {
+          cancelled = true;
+          break;
+        }
+        flushSync(() => {
+          setRenderPage(page);
+        });
+        await waitForPaint();
+        const elements = Array.from(hiddenContainerRef.current.children);
+        await decodeImages(elements);
+        startPdfPage(pdf, page === 0);
 
-      const pdf = await captureCardsToPdf(elements, (current, total) => {
-        setProgress({ current, total });
-      });
+        for (let slot = 0; slot < elements.length; slot++) {
+          if (cancelRequestedRef.current) {
+            cancelled = true;
+            break;
+          }
+          const dataUrl = await captureElement(elements[slot], options);
+          placeCardImage(pdf, dataUrl, slot);
+          done++;
+          if (done === validStudents.length || done % 2 === 0) {
+            setProgress({ current: done, total: validStudents.length });
+          }
+          if (done < validStudents.length) {
+            await new Promise((r) => setTimeout(r, 0));
+          }
+        }
+
+        if (cancelled) break;
+
+        if ((page + 1) % 10 === 0 && page + 1 < totalPages) {
+          await new Promise((r) => setTimeout(r, 200));
+        }
+      }
+
+      if (cancelled) {
+        setRenderPage(0);
+        setProgress({ current: 0, total: 0 });
+        return;
+      }
 
       pdf.save(`AdmitCards_Class_${classNames.replace(/, /g, "_")}.pdf`);
       setIsDone(true);
@@ -194,6 +250,14 @@ export function StepReviewGenerate() {
                         <p className="text-sm font-medium text-primary-900 text-center animate-pulse">
                           Generating... {progress.current} / {progress.total}
                         </p>
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowCancelConfirm(true)}
+                          className="w-full cursor-pointer flex justify-center items-center text-error border-error/40 hover:bg-error/10"
+                        >
+                          <X className="w-4 h-4 mr-2" />
+                          Cancel Generation
+                        </Button>
                       </div>
                     ) : (
                       <Button
@@ -234,9 +298,9 @@ export function StepReviewGenerate() {
           zIndex: -9999,
         }}
       >
-        {validStudents.map((student, idx) => (
+        {validStudents.slice(renderPage * CARDS_PER_PAGE, renderPage * CARDS_PER_PAGE + CARDS_PER_PAGE).map((student, idx) => (
           <AdmitCardTemplate
-            key={student.rollNo + idx}
+            key={renderPage * CARDS_PER_PAGE + idx}
             schoolProfile={schoolProfile}
             examDetails={examDetails}
             student={student}
@@ -244,6 +308,46 @@ export function StepReviewGenerate() {
           />
         ))}
       </div>
+
+      {showCancelConfirm &&
+        createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden">
+            <div className="p-6 flex flex-col items-center text-center">
+              <div className="w-12 h-12 rounded-full bg-error/10 flex items-center justify-center mb-4">
+                <AlertTriangle className="w-6 h-6 text-error" />
+              </div>
+              <h3 className="text-lg font-bold text-ink-900 mb-2">
+                Cancel generation?
+              </h3>
+              <p className="text-sm text-ink-600 mb-6">
+                {progress.current} of {progress.total} cards done. This progress
+                will be discarded and no PDF will be downloaded.
+              </p>
+              <div className="flex w-full gap-3">
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowCancelConfirm(false)}
+                  className="flex-1 cursor-pointer"
+                >
+                  Keep Going
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    cancelRequestedRef.current = true;
+                    setShowCancelConfirm(false);
+                  }}
+                  className="flex-1 cursor-pointer bg-error hover:bg-error/90 focus:ring-error"
+                >
+                  Yes, Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body,
+      )}
     </div>
   );
 }
