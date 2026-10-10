@@ -10,8 +10,9 @@ import {
 } from "../shared/Card";
 import { Input } from "../shared/Input";
 import { Button } from "../shared/Button";
-import { School, Upload, Image as ImageIcon, X, Eye } from "lucide-react";
+import { School, Upload, Image as ImageIcon, X, Eye, PenLine } from "lucide-react";
 import { AdmitCardTemplate } from "../admit-card/AdmitCardTemplate";
+import { DatePicker } from "../shared/DatePicker";
 
 export function StepSchoolProfile() {
   const { state, dispatch } = useContext(WizardContext);
@@ -95,6 +96,47 @@ export function StepSchoolProfile() {
   const clearImage = () => {
     setLocalData((prev) => ({ ...prev, logoDataUrl: null }));
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const sigInputRef = useRef(null);
+
+  const handleSignatureUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      alert("Please upload a PNG, JPG, or WEBP image.");
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const maxSide = 300;
+      const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.max(1, Math.round(img.naturalWidth * scale));
+      const h = Math.max(1, Math.round(img.naturalHeight * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(objectUrl);
+      setLocalData((prev) => ({ ...prev, signatureDataUrl: canvas.toDataURL("image/webp", 0.9) }));
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setLocalData((prev) => ({ ...prev, signatureDataUrl: event.target.result }));
+      };
+      reader.readAsDataURL(file);
+    };
+    img.src = objectUrl;
+  };
+
+  const clearSignature = () => {
+    setLocalData((prev) => ({ ...prev, signatureDataUrl: null }));
+    if (sigInputRef.current) sigInputRef.current.value = "";
   };
 
   const isValid =
@@ -230,6 +272,72 @@ export function StepSchoolProfile() {
               placeholder="10 digit alternate number"
               maxLength={10}
             />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-ink-900 mb-2 block">
+              Head Signature (Optional)
+            </label>
+            <div className="flex items-start space-x-4">
+              <div className="w-36 h-20 rounded-lg border-2 border-dashed border-paper-200 flex items-center justify-center bg-paper-50 relative overflow-hidden group shrink-0">
+                {localData.signatureDataUrl ? (
+                  <>
+                    <img
+                      src={localData.signatureDataUrl}
+                      alt="Signature preview"
+                      className="w-full h-full object-contain p-1"
+                    />
+                    <div className="absolute inset-0 bg-ink-900/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        type="button"
+                        onClick={clearSignature}
+                        className="p-1 bg-white rounded-full text-error hover:bg-paper-100 transition-colors cursor-pointer"
+                        aria-label="Clear signature"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <PenLine className="w-8 h-8 text-ink-400" />
+                )}
+              </div>
+              <div className="flex-1 space-y-3">
+                <input
+                  type="file"
+                  accept="image/png, image/jpeg, image/webp"
+                  className="hidden"
+                  ref={sigInputRef}
+                  onChange={handleSignatureUpload}
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => sigInputRef.current?.click()}
+                  className="text-sm py-1.5 px-3 cursor-pointer"
+                >
+                  <Upload className="w-4 h-4 mr-2" /> Upload Signature
+                </Button>
+                <p className="text-xs text-ink-600">
+                  Transparent PNG works best. Printed above “Head of Gurukul”
+                  on every card.
+                </p>
+                <div className="flex flex-col space-y-2 max-w-xs">
+                  <label className="text-sm font-medium text-ink-900">
+                    Signature Date (Optional)
+                  </label>
+                  <DatePicker
+                    date={localData.signatureDate ? new Date(localData.signatureDate) : undefined}
+                    setDate={(d) =>
+                      setLocalData((prev) => ({
+                        ...prev,
+                        signatureDate: d ? d.toISOString() : null,
+                      }))
+                    }
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </CardContent>
 

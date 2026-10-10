@@ -7,6 +7,8 @@ export const initialState = {
     address: '',
     mobile: '',
     alternateMobile: '',
+    signatureDataUrl: null,
+    signatureDate: null,
   },
   examDetails: {
     examType: 'annual',

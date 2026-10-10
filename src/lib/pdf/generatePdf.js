@@ -35,7 +35,7 @@ export function getFontEmbedCSS() {
           }
           if (!rules) continue;
           for (const rule of rules) {
-            if (rule.type === CSSRule.FONT_FACE_RULE && rule.cssText.indexOf("'Noto Serif'") !== -1) {
+            if (rule.type === CSSRule.FONT_FACE_RULE && (rule.cssText.indexOf("'Noto Serif'") !== -1 || rule.cssText.indexOf("'Baloo 2'") !== -1 || rule.cssText.indexOf("'Caveat'") !== -1)) {
               cssTexts.push(rule.cssText);
             }
           }

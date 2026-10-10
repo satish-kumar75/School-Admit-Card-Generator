@@ -1,4 +1,4 @@
-export const ATTENDANCE_ROWS_PER_SHEET = 24;
+export const ATTENDANCE_ROWS_PER_SHEET = 25;
 
 export function buildAttendanceSheets(validStudents, classSelection) {
   const orderedClasses =

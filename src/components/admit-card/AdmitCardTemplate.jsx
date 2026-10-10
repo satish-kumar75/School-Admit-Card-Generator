@@ -13,6 +13,14 @@ export const AdmitCardTemplate = React.forwardRef(
       titleSizeClass = "text-[26px]";
     }
 
+    const sigDate = schoolProfile.signatureDate
+      ? new Date(schoolProfile.signatureDate)
+      : null;
+    const sigDateLabel =
+      sigDate && !isNaN(sigDate.getTime())
+        ? `${String(sigDate.getDate()).padStart(2, "0")}/${String(sigDate.getMonth() + 1).padStart(2, "0")}/${sigDate.getFullYear()}`
+        : "";
+
     return (
       <div
         ref={ref}
@@ -158,8 +166,27 @@ export const AdmitCardTemplate = React.forwardRef(
             Parent Signature
           </div>
           <div className="w-56 text-center">
+            {(schoolProfile.signatureDataUrl || sigDateLabel) && (
+              <div className="flex flex-col items-center justify-end">
+                {schoolProfile.signatureDataUrl ? (
+                  <img
+                    src={schoolProfile.signatureDataUrl}
+                    alt="Signature"
+                    className="max-h-8 max-w-28 object-contain"
+                  />
+                ) : null}
+                {sigDateLabel ? (
+                  <div
+                    className="text-[17px] font-normal leading-none"
+                    style={{ fontFamily: "'Caveat', cursive" }}
+                  >
+                    {sigDateLabel}
+                  </div>
+                ) : null}
+              </div>
+            )}
             <div className="border-b border-black w-full mb-1"></div>
-            Principle Signature
+            Head of Gurukul
           </div>
         </div>
       </div>
